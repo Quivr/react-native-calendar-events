@@ -604,22 +604,27 @@ RCT_EXPORT_METHOD(authorizeEventStore:(RCTPromiseResolveBlock)resolve rejecter:(
 
 RCT_EXPORT_METHOD(findCalendars:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
-    NSArray* calendars = [self.eventStore calendarsForEntityType:EKEntityTypeEvent];
+    NSArray *calendars = [self.eventStore calendarsForEntityType:EKEntityTypeEvent];
 
     if (!calendars) {
         reject(@"error", @"error finding calendars", nil);
     } else {
-        NSMutableArray *eventCalendars = [[NSMutableArray alloc] init];
-        for (EKCalendar *calendar in calendars) {
-            [eventCalendars addObject:@{
-                                        @"id": calendar.calendarIdentifier,
-                                        @"title": calendar.title,
-                                        @"allowsModifications": @(calendar.allowsContentModifications),
-                                        @"source": calendar.source.title,
-                                        @"allowedAvailabilities": [self calendarSupportedAvailabilitiesFromMask:calendar.supportedEventAvailabilities]
-                                        }];
+        @try {
+            NSMutableArray *eventCalendars = [[NSMutableArray alloc] init];
+            for (EKCalendar *calendar in calendars) {
+                [eventCalendars addObject:@{
+                                            @"id": calendar.calendarIdentifier,
+                                            @"title": calendar.title,
+                                            @"allowsModifications": @(calendar.allowsContentModifications),
+                                            @"source": calendar.source.title,
+                                            @"allowedAvailabilities": [self calendarSupportedAvailabilitiesFromMask:calendar.supportedEventAvailabilities]
+                                            }];
+            }
+            resolve(eventCalendars);
         }
-        resolve(eventCalendars);
+        @catch (NSException *error) {
+            reject(@"error", @"error finding calendars", nil);
+        }
     }
 }
 
